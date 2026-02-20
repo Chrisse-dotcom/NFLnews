@@ -15,79 +15,62 @@
 
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         :root {
+            --blue:   #013369;
+            --red:    #D50A0A;
             --dark:   #080d1a;
             --card:   #111827;
             --border: #1e2a3a;
             --text:   #e8eaf0;
             --muted:  #8892a4;
-            /* section accent – overridden per-section via JS */
-            --accent1: #013369;
-            --accent2: #D50A0A;
         }
-
-        html, body { height: 100%; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--dark);
             color: var(--text);
+            min-height: 100vh;
             min-height: 100dvh;
-            overscroll-behavior: none;
         }
 
-        /* ── Header ────────────────────────────────────── */
+        /* ── Header ── */
         header {
-            background: linear-gradient(135deg, #013369 0%, #021f45 55%, #8B0000 100%);
+            background: linear-gradient(135deg, var(--blue) 0%, #021f45 50%, #8B0000 100%);
             padding: env(safe-area-inset-top, 0px) 0 0;
             text-align: center;
             position: sticky;
             top: 0;
-            z-index: 200;
-            box-shadow: 0 2px 30px rgba(0,0,0,0.7);
-        }
-        .header-inner { padding: 14px 20px 0; }
-        header h1 { font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; }
-        header p  { font-size: 0.72rem; opacity: 0.65; margin-top: 3px; letter-spacing: 1px; }
-
-        /* ── Tab Bar ─────────────────────────────────── */
-        .tab-bar {
-            display: flex;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            margin-top: 10px;
-        }
-        .tab-btn {
-            flex: 1;
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.45);
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            padding: 10px 4px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: color 0.2s, border-color 0.2s;
-            line-height: 1.3;
-        }
-        .tab-btn .tab-icon { display: block; font-size: 1.15rem; margin-bottom: 2px; }
-        .tab-btn.active {
-            color: #fff;
-            border-bottom-color: var(--tab-color, #D50A0A);
+            z-index: 100;
+            box-shadow: 0 2px 30px rgba(0,0,0,0.6);
         }
 
-        /* ── Section Panel ───────────────────────────── */
-        .section-panel { display: none; }
-        .section-panel.active { display: block; }
+        .header-inner {
+            padding: 16px 20px 14px;
+        }
 
-        /* ── Controls ────────────────────────────────── */
+        header h1 {
+            font-size: 1.45rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        header p {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 3px;
+            letter-spacing: 1px;
+        }
+
+        /* ── Controls ── */
         .controls {
-            padding: 16px 16px 0;
+            padding: 18px 16px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -95,97 +78,80 @@
             max-width: 600px;
             margin: 0 auto;
         }
+
         .refresh-btn {
+            background: linear-gradient(135deg, var(--red), #a00808);
             color: white;
             border: none;
-            padding: 13px 36px;
+            padding: 14px 36px;
             border-radius: 50px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 800;
             cursor: pointer;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             transition: transform 0.15s, opacity 0.2s;
+            box-shadow: 0 4px 20px rgba(213, 10, 10, 0.45);
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
         }
-        .refresh-btn:active  { transform: scale(0.96); }
-        .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .refresh-btn:active { transform: scale(0.96); }
+        .refresh-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
         .status {
-            font-size: 0.80rem;
+            font-size: 0.82rem;
             color: var(--muted);
             text-align: center;
             min-height: 18px;
         }
-        .progress-bar {
-            height: 3px;
-            background: var(--border);
-            border-radius: 2px;
-            overflow: hidden;
-            width: 100%;
-            max-width: 300px;
-        }
-        .progress-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width 0.4s ease;
-        }
 
-        /* ── News List ───────────────────────────────── */
-        .news-list {
-            padding: 14px 14px 50px;
+        /* ── News Grid ── */
+        #news-container {
+            padding: 14px 14px 40px;
             max-width: 600px;
             margin: 0 auto;
         }
 
-        /* ── Card ────────────────────────────────────── */
+        /* ── Card ── */
         .news-card {
             background: var(--card);
             border-radius: 18px;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             overflow: hidden;
             border: 1px solid var(--border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.35);
             animation: fadeUp 0.4s ease both;
-            cursor: pointer;
-            user-select: none;
         }
-        .news-card:active { opacity: 0.85; }
 
         .card-img {
             width: 100%;
-            height: 190px;
+            height: 195px;
             object-fit: cover;
             display: block;
         }
 
-        .card-body { padding: 14px 16px 16px; }
-
-        .card-top {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .card-top-text { flex: 1; min-width: 0; }
+        .card-body { padding: 16px; }
 
         .card-meta {
             display: flex;
             align-items: center;
-            gap: 7px;
-            margin-bottom: 8px;
+            gap: 8px;
+            margin-bottom: 10px;
         }
+
         .badge-num {
+            background: var(--red);
             color: #fff;
-            font-size: 0.62rem;
+            font-size: 0.65rem;
             font-weight: 900;
-            padding: 2px 8px;
+            padding: 2px 9px;
             border-radius: 20px;
             letter-spacing: 1px;
-            flex-shrink: 0;
         }
+
         .badge-label {
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
@@ -193,48 +159,31 @@
         }
 
         .card-title {
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             line-height: 1.45;
             color: #fff;
+            margin-bottom: 10px;
         }
 
-        /* Chevron toggle indicator */
-        .card-chevron {
-            font-size: 1rem;
-            color: var(--muted);
-            flex-shrink: 0;
-            margin-top: 2px;
-            transition: transform 0.3s ease;
-        }
-        .news-card.open .card-chevron { transform: rotate(180deg); }
-
-        /* Collapsible body */
-        .card-collapse {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease;
-        }
-        .news-card.open .card-collapse { max-height: 600px; }
-
-        .card-collapse-inner {
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-            margin-top: 12px;
-        }
         .card-desc {
             font-size: 0.875rem;
             line-height: 1.65;
             color: var(--muted);
             margin-bottom: 14px;
         }
+
         .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
         }
-        .card-date  { font-size: 0.70rem; color: #555; }
-        .card-link  {
+
+        .card-date { font-size: 0.72rem; color: #555; }
+
+        .card-link {
             font-size: 0.78rem;
             font-weight: 700;
             color: #4a9eff;
@@ -242,7 +191,7 @@
             padding: 4px 0;
         }
 
-        /* ── Loading / Error / Empty ─────────────────── */
+        /* ── Loading ── */
         .loading-wrap {
             display: flex;
             flex-direction: column;
@@ -250,359 +199,291 @@
             padding: 50px 20px;
             gap: 16px;
         }
+
         .spinner {
-            width: 42px; height: 42px;
+            width: 44px;
+            height: 44px;
             border: 4px solid var(--border);
+            border-top-color: var(--red);
             border-radius: 50%;
             animation: spin 0.75s linear infinite;
         }
+
         .loading-wrap p { color: var(--muted); font-size: 0.9rem; }
 
+        /* ── Error ── */
         .error-box {
             background: #1a0f0f;
             border: 1px solid #5a1010;
             border-radius: 14px;
-            padding: 22px;
+            padding: 24px;
             text-align: center;
-            margin: 8px 0;
+            margin: 10px 0;
         }
-        .error-box p     { color: #ff7070; margin-bottom: 6px; }
-        .error-box small { color: var(--muted); font-size: 0.78rem; }
 
+        .error-box p { color: #ff7070; margin-bottom: 8px; }
+        .error-box small { color: var(--muted); font-size: 0.8rem; }
+
+        /* ── Empty ── */
         .empty-hint {
             text-align: center;
-            padding: 55px 20px;
+            padding: 60px 20px;
             color: var(--muted);
         }
-        .empty-hint .big-icon {
-            font-size: 3.8rem;
-            display: block;
-            margin-bottom: 14px;
-            animation: bounce 2.2s ease infinite;
-        }
-        .empty-hint h2 { font-size: 1.05rem; color: var(--text); margin-bottom: 8px; }
-        .empty-hint p  { font-size: 0.82rem; line-height: 1.65; }
 
-        /* ── Animations ──────────────────────────────── */
-        @keyframes spin    { to { transform: rotate(360deg); } }
-        @keyframes fadeUp  {
-            from { opacity: 0; transform: translateY(14px); }
+        .empty-hint .football-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 16px;
+            animation: bounce 2s ease infinite;
+        }
+
+        .empty-hint h2 {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .empty-hint p { font-size: 0.85rem; line-height: 1.6; }
+
+        /* ── Progress bar ── */
+        .progress-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blue), var(--red));
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        /* ── Animations ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes bounce  {
+        @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-9px); }
+            50% { transform: translateY(-10px); }
         }
 
-        /* safe area bottom padding */
-        .news-list { padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px)); }
+        /* Safe area bottom */
+        body::after {
+            content: '';
+            display: block;
+            height: env(safe-area-inset-bottom, 0px);
+        }
     </style>
 </head>
 <body>
 
-<!-- ══ HEADER ═══════════════════════════════════════════ -->
 <header>
     <div class="header-inner">
         <h1>🏈 NFL News</h1>
-        <p>Aktuelle Nachrichten &bull; Automatisch auf Deutsch</p>
+        <p>Aktuelle Nachrichten &bull; Auf Deutsch</p>
     </div>
-
-    <nav class="tab-bar" role="tablist">
-        <button class="tab-btn active" role="tab" data-section="nfl"
-                style="--tab-color:#D50A0A" onclick="switchTab('nfl')">
-            <span class="tab-icon">🏈</span>NFL
-        </button>
-        <button class="tab-btn" role="tab" data-section="niners"
-                style="--tab-color:#C9A84C" onclick="switchTab('niners')">
-            <span class="tab-icon">🔴</span>49ers
-        </button>
-        <button class="tab-btn" role="tab" data-section="eagles"
-                style="--tab-color:#A5ACAF" onclick="switchTab('eagles')">
-            <span class="tab-icon">🦅</span>Eagles
-        </button>
-    </nav>
 </header>
 
-<!-- ══ SECTIONS ══════════════════════════════════════════ -->
-
-<!-- NFL General -->
-<div id="panel-nfl" class="section-panel active">
-    <div class="controls">
-        <button class="refresh-btn" id="btn-nfl"
-                style="background: linear-gradient(135deg,#D50A0A,#900808);box-shadow:0 4px 18px rgba(213,10,10,.4)"
-                onclick="loadSection('nfl')">News laden</button>
-        <div class="status" id="status-nfl">Tippe auf "News laden" für die Top 10 NFL-News</div>
-        <div class="progress-bar" id="pb-nfl" style="display:none">
-            <div class="progress-fill" id="pf-nfl" style="width:0%;background:linear-gradient(90deg,#013369,#D50A0A)"></div>
-        </div>
-    </div>
-    <div class="news-list" id="list-nfl">
-        <div class="empty-hint">
-            <span class="big-icon">🏈</span>
-            <h2>NFL Top 10</h2>
-            <p>Die aktuellsten Schlagzeilen aus der NFL<br>direkt ins Deutsche übersetzt.</p>
-        </div>
+<div class="controls">
+    <button class="refresh-btn" id="refreshBtn" onclick="loadNews()">News laden</button>
+    <div class="status" id="status">Tippe auf "News laden" um die Top 10 NFL-News abzurufen</div>
+    <div class="progress-bar" id="progressBar" style="display:none">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
     </div>
 </div>
 
-<!-- 49ers -->
-<div id="panel-niners" class="section-panel">
-    <div class="controls">
-        <button class="refresh-btn" id="btn-niners"
-                style="background:linear-gradient(135deg,#AA0000,#780000);box-shadow:0 4px 18px rgba(170,0,0,.45)"
-                onclick="loadSection('niners')">News laden</button>
-        <div class="status" id="status-niners">Tippe auf "News laden" für die Top 10 49ers-News</div>
-        <div class="progress-bar" id="pb-niners" style="display:none">
-            <div class="progress-fill" id="pf-niners" style="width:0%;background:linear-gradient(90deg,#AA0000,#C9A84C)"></div>
-        </div>
-    </div>
-    <div class="news-list" id="list-niners">
-        <div class="empty-hint">
-            <span class="big-icon">🔴</span>
-            <h2>San Francisco 49ers</h2>
-            <p>Alle News rund um die Niners<br>automatisch auf Deutsch übersetzt.</p>
-        </div>
+<div id="news-container">
+    <div class="empty-hint">
+        <span class="football-icon">🏈</span>
+        <h2>Willkommen bei NFL News</h2>
+        <p>Lade die aktuellsten 10 NFL-Nachrichten<br>aus den USA — automatisch auf Deutsch übersetzt.</p>
     </div>
 </div>
 
-<!-- Eagles -->
-<div id="panel-eagles" class="section-panel">
-    <div class="controls">
-        <button class="refresh-btn" id="btn-eagles"
-                style="background:linear-gradient(135deg,#004C54,#003038);box-shadow:0 4px 18px rgba(0,76,84,.5)"
-                onclick="loadSection('eagles')">News laden</button>
-        <div class="status" id="status-eagles">Tippe auf "News laden" für die Top 10 Eagles-News</div>
-        <div class="progress-bar" id="pb-eagles" style="display:none">
-            <div class="progress-fill" id="pf-eagles" style="width:0%;background:linear-gradient(90deg,#004C54,#A5ACAF)"></div>
-        </div>
-    </div>
-    <div class="news-list" id="list-eagles">
-        <div class="empty-hint">
-            <span class="big-icon">🦅</span>
-            <h2>Philadelphia Eagles</h2>
-            <p>Alle News rund um die Eagles<br>automatisch auf Deutsch übersetzt.</p>
-        </div>
-    </div>
-</div>
-
-<!-- ══ SCRIPT ════════════════════════════════════════════ -->
 <script>
-// ── Section config ──────────────────────────────────────────────────────────
-const SECTIONS = {
-    nfl: {
-        url:      'https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=15',
-        cache:    'nfl_cache_v3',
-        label:    'NFL News',
-        badgeColor: '#D50A0A'
-    },
-    niners: {
-        url:      'https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/25/news?limit=15',
-        cache:    'niners_cache_v1',
-        label:    '49ers',
-        badgeColor: '#AA0000'
-    },
-    eagles: {
-        url:      'https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/21/news?limit=15',
-        cache:    'eagles_cache_v1',
-        label:    'Eagles',
-        badgeColor: '#004C54'
-    }
-};
+    // ── Config ──────────────────────────────────────────────────────────────
+    const ESPN_URL   = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=15';
+    const TRANS_URL  = 'https://api.mymemory.translated.net/get';
+    const CACHE_KEY  = 'nfl_cache_v2';
+    const CACHE_TTL  = 30 * 60 * 1000; // 30 min
 
-const TRANS_URL = 'https://api.mymemory.translated.net/get';
-const busy = { nfl: false, niners: false, eagles: false };
+    let busy = false;
 
-// ── Tab switching ───────────────────────────────────────────────────────────
-function switchTab(id) {
-    document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('panel-' + id).classList.add('active');
-    document.querySelector(`[data-section="${id}"]`).classList.add('active');
-}
+    // ── Helpers ─────────────────────────────────────────────────────────────
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ── Collapsible cards ───────────────────────────────────────────────────────
-function toggleCard(card) {
-    card.classList.toggle('open');
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function setStatus(section, msg) {
-    document.getElementById('status-' + section).textContent = msg;
-}
-
-function setProgress(section, pct) {
-    const bar  = document.getElementById('pb-' + section);
-    const fill = document.getElementById('pf-' + section);
-    if (pct === null) { bar.style.display = 'none'; return; }
-    bar.style.display = 'block';
-    fill.style.width  = pct + '%';
-}
-
-function escHtml(str) {
-    return String(str || '')
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function fmtDate(iso) {
-    if (!iso) return '';
-    return new Date(iso).toLocaleString('de-DE', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-    });
-}
-
-async function translate(text) {
-    if (!text || !text.trim()) return '';
-    const snippet = text.substring(0, 480);
-    for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-            const res  = await fetch(`${TRANS_URL}?q=${encodeURIComponent(snippet)}&langpair=en|de`);
-            const json = await res.json();
-            if (json.responseStatus === 200) return json.responseData.translatedText || text;
-            if (json.responseStatus === 429) await sleep(2000 * (attempt + 1));
-        } catch { await sleep(500 * (attempt + 1)); }
-    }
-    return text;
-}
-
-// ── Render ──────────────────────────────────────────────────────────────────
-function render(section, articles) {
-    const container   = document.getElementById('list-' + section);
-    const badgeColor  = SECTIONS[section].badgeColor;
-    const label       = SECTIONS[section].label;
-
-    if (!articles || articles.length === 0) {
-        container.innerHTML = '<div class="error-box"><p>Keine Artikel gefunden.</p></div>';
-        return;
+    function setStatus(msg) {
+        document.getElementById('status').textContent = msg;
     }
 
-    container.innerHTML = articles.map((a, i) => {
-        const img   = a.images?.[0]?.url ?? null;
-        const link  = a.links?.web?.href ?? a.links?.mobile?.href ?? null;
-        const date  = fmtDate(a.published);
-        const title = escHtml(a.titleDE || a.headline || 'Kein Titel');
-        const desc  = escHtml(a.descDE  || a.description || '');
+    function setProgress(pct) {
+        const bar  = document.getElementById('progressBar');
+        const fill = document.getElementById('progressFill');
+        if (pct === null) { bar.style.display = 'none'; return; }
+        bar.style.display = 'block';
+        fill.style.width  = pct + '%';
+    }
 
-        return `
-        <div class="news-card" style="animation-delay:${i * 55}ms" onclick="toggleCard(this)">
-            ${img ? `<img class="card-img" src="${img}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
-            <div class="card-body">
-                <div class="card-meta">
-                    <span class="badge-num" style="background:${badgeColor}">#${i + 1}</span>
-                    <span class="badge-label">${label}</span>
-                </div>
-                <div class="card-top">
-                    <div class="card-top-text">
-                        <h2 class="card-title">${title}</h2>
-                    </div>
-                    <span class="card-chevron">▾</span>
-                </div>
-                <div class="card-collapse">
-                    <div class="card-collapse-inner">
-                        ${desc ? `<p class="card-desc">${desc}</p>` : ''}
-                        <div class="card-footer">
-                            <span class="card-date">📅 ${date}</span>
-                            ${link ? `<a class="card-link" href="${link}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Weiterlesen →</a>` : ''}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    }).join('');
-}
+    async function translate(text, retries = 3) {
+        if (!text || !text.trim()) return '';
+        const snippet = text.substring(0, 480); // stay within MyMemory limits
+        for (let attempt = 0; attempt < retries; attempt++) {
+            try {
+                const res  = await fetch(`${TRANS_URL}?q=${encodeURIComponent(snippet)}&langpair=en|de`);
+                const json = await res.json();
+                if (json.responseStatus === 200) {
+                    return json.responseData.translatedText || text;
+                }
+                if (json.responseStatus === 429) await sleep(2000 * (attempt + 1));
+            } catch {
+                await sleep(500 * (attempt + 1));
+            }
+        }
+        return text; // fallback: original English
+    }
 
-// ── Load section ────────────────────────────────────────────────────────────
-async function loadSection(section) {
-    if (busy[section]) return;
-    busy[section] = true;
+    function fmtDate(iso) {
+        if (!iso) return '';
+        return new Date(iso).toLocaleString('de-DE', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
 
-    const cfg = SECTIONS[section];
-    const btn = document.getElementById('btn-' + section);
-    btn.disabled    = true;
-    btn.textContent = '⏳ Wird geladen…';
-    setProgress(section, 5);
-
-    document.getElementById('list-' + section).innerHTML = `
-        <div class="loading-wrap">
-            <div class="spinner" style="border-top-color:${cfg.badgeColor}"></div>
-            <p>Lade ${cfg.label}-News…</p>
-        </div>`;
-
-    try {
-        // 1) Fetch
-        setStatus(section, '📡 Verbinde mit ESPN…');
-        const res  = await fetch(cfg.url);
-        if (!res.ok) throw new Error(`ESPN API Fehler (${res.status})`);
-        const data = await res.json();
-        const raw  = (data.articles || []).slice(0, 10);
-        if (raw.length === 0) throw new Error('Keine Artikel verfügbar');
-        setProgress(section, 20);
-
-        // 2) Translate
-        const articles = [];
-        for (let i = 0; i < raw.length; i++) {
-            const a = raw[i];
-            setStatus(section, `🔤 Übersetze ${i + 1} / ${raw.length}…`);
-            setProgress(section, 20 + Math.round((i / raw.length) * 74));
-
-            const [titleDE, descDE] = await Promise.all([
-                translate(a.headline    || ''),
-                translate(a.description || '')
-            ]);
-            articles.push({ ...a, titleDE, descDE });
-
-            if (i < raw.length - 1) await sleep(260);
+    // ── Render ───────────────────────────────────────────────────────────────
+    function render(articles) {
+        const container = document.getElementById('news-container');
+        if (!articles || articles.length === 0) {
+            container.innerHTML = '<div class="error-box"><p>Keine Artikel gefunden.</p></div>';
+            return;
         }
 
-        setProgress(section, 100);
+        container.innerHTML = articles.map((a, i) => {
+            const img  = a.images?.[0]?.url ?? null;
+            const link = a.links?.web?.href ?? a.links?.mobile?.href ?? null;
+            const date = fmtDate(a.published);
+            const title = escHtml(a.titleDE || a.headline || 'Kein Titel');
+            const desc  = escHtml(a.descDE  || a.description || '');
 
-        // 3) Cache
-        localStorage.setItem(cfg.cache, JSON.stringify({ data: articles, ts: Date.now() }));
-
-        // 4) Render
-        render(section, articles);
-        setStatus(section, `✅ ${articles.length} Artikel geladen – ${new Date().toLocaleTimeString('de-DE')}`);
-
-    } catch (err) {
-        console.error(err);
-        document.getElementById('list-' + section).innerHTML = `
-            <div class="error-box">
-                <p>❌ Fehler beim Laden</p>
-                <small>${err.message}</small>
+            return `
+            <div class="news-card" style="animation-delay:${i * 60}ms">
+                ${img ? `<img class="card-img" src="${img}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+                <div class="card-body">
+                    <div class="card-meta">
+                        <span class="badge-num">#${i + 1}</span>
+                        <span class="badge-label">NFL News</span>
+                    </div>
+                    <h2 class="card-title">${title}</h2>
+                    ${desc ? `<p class="card-desc">${desc}</p>` : ''}
+                    <div class="card-footer">
+                        <span class="card-date">${date}</span>
+                        ${link ? `<a class="card-link" href="${link}" target="_blank" rel="noopener">Weiterlesen →</a>` : ''}
+                    </div>
+                </div>
             </div>`;
-        setStatus(section, 'Bitte versuche es erneut');
-    } finally {
-        busy[section]   = false;
-        btn.disabled    = false;
-        btn.textContent = '🔄 Aktualisieren';
-        await sleep(600);
-        setProgress(section, null);
+        }).join('');
     }
-}
 
-// ── Service Worker ──────────────────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
 
-// ── Boot from cache ─────────────────────────────────────────────────────────
-(function bootFromCache() {
-    for (const [id, cfg] of Object.entries(SECTIONS)) {
+    // ── Main ─────────────────────────────────────────────────────────────────
+    async function loadNews() {
+        if (busy) return;
+        busy = true;
+
+        const btn = document.getElementById('refreshBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Wird geladen…';
+        setProgress(5);
+
+        document.getElementById('news-container').innerHTML = `
+            <div class="loading-wrap">
+                <div class="spinner"></div>
+                <p>Lade aktuelle NFL-News…</p>
+            </div>`;
+
         try {
-            const raw = localStorage.getItem(cfg.cache);
-            if (!raw) continue;
-            const { data, ts } = JSON.parse(raw);
-            if (!data || !data.length) continue;
-            render(id, data);
-            const mins = Math.round((Date.now() - ts) / 60000);
-            setStatus(id, `Gespeichert – vor ${mins} Minute${mins !== 1 ? 'n' : ''} geladen`);
-            document.getElementById('btn-' + id).textContent = '🔄 Aktualisieren';
-        } catch {}
+            // 1) Fetch
+            setStatus('📡 Verbinde mit ESPN…');
+            const res  = await fetch(ESPN_URL);
+            if (!res.ok) throw new Error(`ESPN API Fehler (${res.status})`);
+            const data = await res.json();
+            const raw  = (data.articles || []).slice(0, 10);
+            setProgress(20);
+
+            // 2) Translate
+            const articles = [];
+            for (let i = 0; i < raw.length; i++) {
+                const a = raw[i];
+                setStatus(`🔤 Übersetze ${i + 1} / ${raw.length}…`);
+                setProgress(20 + Math.round((i / raw.length) * 75));
+
+                const [titleDE, descDE] = await Promise.all([
+                    translate(a.headline   || ''),
+                    translate(a.description || '')
+                ]);
+                articles.push({ ...a, titleDE, descDE });
+
+                if (i < raw.length - 1) await sleep(280); // be nice to MyMemory
+            }
+
+            setProgress(100);
+
+            // 3) Cache
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ data: articles, ts: Date.now() }));
+
+            // 4) Render
+            render(articles);
+            setStatus(`✅ ${articles.length} Artikel geladen – ${new Date().toLocaleTimeString('de-DE')}`);
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById('news-container').innerHTML = `
+                <div class="error-box">
+                    <p>❌ Fehler beim Laden der News</p>
+                    <small>${err.message}</small>
+                </div>`;
+            setStatus('Bitte versuche es erneut');
+        } finally {
+            busy = false;
+            btn.disabled = false;
+            btn.textContent = '🔄 Aktualisieren';
+            await sleep(600);
+            setProgress(null);
+        }
     }
-})();
+
+    // ── Service Worker ───────────────────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    // ── Boot: try cache ──────────────────────────────────────────────────────
+    (function bootFromCache() {
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (!raw) return;
+            const { data, ts } = JSON.parse(raw);
+            if (!data || !data.length) return;
+            render(data);
+            const mins = Math.round((Date.now() - ts) / 60000);
+            setStatus(`Gespeicherte News – vor ${mins} Minute${mins !== 1 ? 'n' : ''} geladen`);
+            document.getElementById('refreshBtn').textContent = '🔄 Aktualisieren';
+        } catch {}
+    })();
 </script>
 </body>
 </html>
