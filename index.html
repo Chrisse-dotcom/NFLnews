@@ -166,11 +166,30 @@
             margin-bottom: 10px;
         }
 
-        .card-desc {
+        /* Lead sentence (= translated description) */
+        .card-lead {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #c5ccd8;
+            font-style: italic;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--red);
+            padding-left: 10px;
+        }
+
+        /* Full translated article body */
+        .card-story {
             font-size: 0.875rem;
-            line-height: 1.65;
+            line-height: 1.75;
             color: var(--muted);
             margin-bottom: 14px;
+        }
+
+        /* Divider between lead and story */
+        .card-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 12px 0;
         }
 
         .card-footer {
@@ -311,7 +330,7 @@
     // ── Config ──────────────────────────────────────────────────────────────
     const ESPN_URL   = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=15';
     const TRANS_URL  = 'https://api.mymemory.translated.net/get';
-    const CACHE_KEY  = 'nfl_cache_v2';
+    const CACHE_KEY  = 'nfl_cache_v4';
     const CACHE_TTL  = 30 * 60 * 1000; // 30 min
 
     let busy = false;
@@ -331,9 +350,21 @@
         fill.style.width  = pct + '%';
     }
 
+    // Strip HTML tags and collapse whitespace
+    function stripHtml(html) {
+        return (html || '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     async function translate(text, retries = 3) {
         if (!text || !text.trim()) return '';
-        const snippet = text.substring(0, 480); // stay within MyMemory limits
+        const snippet = text.substring(0, 900); // MyMemory ~500 words, ~900 chars safe
         for (let attempt = 0; attempt < retries; attempt++) {
             try {
                 const res  = await fetch(`${TRANS_URL}?q=${encodeURIComponent(snippet)}&langpair=en|de`);
@@ -366,11 +397,14 @@
         }
 
         container.innerHTML = articles.map((a, i) => {
-            const img  = a.images?.[0]?.url ?? null;
-            const link = a.links?.web?.href ?? a.links?.mobile?.href ?? null;
-            const date = fmtDate(a.published);
-            const title = escHtml(a.titleDE || a.headline || 'Kein Titel');
-            const desc  = escHtml(a.descDE  || a.description || '');
+            const img    = a.images?.[0]?.url ?? null;
+            const link   = a.links?.web?.href ?? a.links?.mobile?.href ?? null;
+            const date   = fmtDate(a.published);
+            const byline = a.byline ? escHtml(a.byline) : null;
+            const source = a.source ? escHtml(a.source) : null;
+            const title  = escHtml(a.titleDE  || a.headline    || 'Kein Titel');
+            const lead   = escHtml(a.descDE   || a.description || '');
+            const story  = escHtml(a.storyDE  || '');
 
             return `
             <div class="news-card" style="animation-delay:${i * 60}ms">
@@ -379,12 +413,14 @@
                     <div class="card-meta">
                         <span class="badge-num">#${i + 1}</span>
                         <span class="badge-label">NFL News</span>
+                        ${byline ? `<span class="badge-label" style="margin-left:auto">✍️ ${byline}</span>` : (source ? `<span class="badge-label" style="margin-left:auto">📰 ${source}</span>` : '')}
                     </div>
                     <h2 class="card-title">${title}</h2>
-                    ${desc ? `<p class="card-desc">${desc}</p>` : ''}
+                    ${lead  ? `<p class="card-lead">${lead}</p>` : ''}
+                    ${story ? `<div class="card-divider"></div><p class="card-story">${story}</p>` : ''}
                     <div class="card-footer">
-                        <span class="card-date">${date}</span>
-                        ${link ? `<a class="card-link" href="${link}" target="_blank" rel="noopener">Weiterlesen →</a>` : ''}
+                        <span class="card-date">📅 ${date}</span>
+                        ${link ? `<a class="card-link" href="${link}" target="_blank" rel="noopener">Vollständiger Artikel →</a>` : ''}
                     </div>
                 </div>
             </div>`;
@@ -431,13 +467,17 @@
                 setStatus(`🔤 Übersetze ${i + 1} / ${raw.length}…`);
                 setProgress(20 + Math.round((i / raw.length) * 75));
 
-                const [titleDE, descDE] = await Promise.all([
-                    translate(a.headline   || ''),
-                    translate(a.description || '')
+                // Build story text: prefer full article, fallback to description
+                const rawStory = stripHtml(a.story || '').substring(0, 900);
+                // Translate headline, description lead, and story body
+                const [titleDE, descDE, storyDE] = await Promise.all([
+                    translate(a.headline    || ''),
+                    translate(a.description || ''),
+                    rawStory ? translate(rawStory) : Promise.resolve('')
                 ]);
-                articles.push({ ...a, titleDE, descDE });
+                articles.push({ ...a, titleDE, descDE, storyDE });
 
-                if (i < raw.length - 1) await sleep(280); // be nice to MyMemory
+                if (i < raw.length - 1) await sleep(320); // be nice to MyMemory (3 requests/article)
             }
 
             setProgress(100);
