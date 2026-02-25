@@ -330,7 +330,7 @@
     // ── Config ──────────────────────────────────────────────────────────────
     const ESPN_URL   = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=15';
     const TRANS_URL  = 'https://api.mymemory.translated.net/get';
-    const CACHE_KEY  = 'nfl_cache_v4';
+    const CACHE_KEY  = 'nfl_cache_v5';
     const CACHE_TTL  = 30 * 60 * 1000; // 30 min
 
     let busy = false;
@@ -362,9 +362,10 @@
             .trim();
     }
 
+    // Single-chunk translate (≤ 2500 chars per request — MyMemory sweet spot)
     async function translate(text, retries = 3) {
         if (!text || !text.trim()) return '';
-        const snippet = text.substring(0, 900); // MyMemory ~500 words, ~900 chars safe
+        const snippet = text.substring(0, 2500);
         for (let attempt = 0; attempt < retries; attempt++) {
             try {
                 const res  = await fetch(`${TRANS_URL}?q=${encodeURIComponent(snippet)}&langpair=en|de`);
@@ -377,7 +378,38 @@
                 await sleep(500 * (attempt + 1));
             }
         }
-        return text; // fallback: original English
+        return text;
+    }
+
+    // Multi-chunk translate for long story text (up to 6000 chars total)
+    // Splits at sentence boundaries so translations stay coherent
+    async function translateChunked(text, maxTotal = 6000) {
+        if (!text || !text.trim()) return '';
+        const capped = text.substring(0, maxTotal);
+
+        // Collect sentence-boundary chunks ≤ 2400 chars each
+        const chunks = [];
+        let current  = '';
+        // Match sentence-ending tokens (incl. abbreviations that don't end sentences are rare in sports news)
+        const parts  = capped.match(/[^.!?]+[.!?]+["']?/g) || [capped];
+
+        for (const part of parts) {
+            if (current.length + part.length > 2400 && current.length > 0) {
+                chunks.push(current.trimEnd());
+                current = part;
+            } else {
+                current += part;
+            }
+        }
+        if (current.trim()) chunks.push(current.trim());
+
+        // Translate sequentially to avoid flooding the API
+        const results = [];
+        for (let i = 0; i < chunks.length; i++) {
+            results.push(await translate(chunks[i]));
+            if (i < chunks.length - 1) await sleep(350);
+        }
+        return results.join(' ');
     }
 
     function fmtDate(iso) {
@@ -467,17 +499,21 @@
                 setStatus(`🔤 Übersetze ${i + 1} / ${raw.length}…`);
                 setProgress(20 + Math.round((i / raw.length) * 75));
 
-                // Build story text: prefer full article, fallback to description
-                const rawStory = stripHtml(a.story || '').substring(0, 900);
-                // Translate headline, description lead, and story body
-                const [titleDE, descDE, storyDE] = await Promise.all([
+                // Strip and collect full story text (up to 6000 chars)
+                const rawStory = stripHtml(a.story || '').substring(0, 6000);
+
+                // Headline + description in parallel (each ≤ 2500 chars, single request)
+                const [titleDE, descDE] = await Promise.all([
                     translate(a.headline    || ''),
-                    translate(a.description || ''),
-                    rawStory ? translate(rawStory) : Promise.resolve('')
+                    translate(a.description || '')
                 ]);
+
+                // Story translated in chunks (may produce 1–3 API calls)
+                const storyDE = rawStory ? await translateChunked(rawStory) : '';
+
                 articles.push({ ...a, titleDE, descDE, storyDE });
 
-                if (i < raw.length - 1) await sleep(320); // be nice to MyMemory (3 requests/article)
+                if (i < raw.length - 1) await sleep(400); // pause between articles
             }
 
             setProgress(100);
